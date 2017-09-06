@@ -38,7 +38,7 @@ class TimestampDataTypeDirectDictionaryTest extends QueryTest with BeforeAndAfte
   override def beforeAll {
     try {
       CarbonProperties.getInstance()
-        .addProperty(TimeStampGranularityConstants.CARBON_CUTOFF_TIMESTAMP, "2000-12-13 02:10.00.0")
+        .addProperty(TimeStampGranularityConstants.CARBON_CUTOFF_TIMESTAMP, "2000-12-13 02:10:00.0")
       CarbonProperties.getInstance()
         .addProperty(TimeStampGranularityConstants.CARBON_TIME_GRANULARITY,
           TimeStampGranularityConstants.TIME_GRAN_SEC.toString
