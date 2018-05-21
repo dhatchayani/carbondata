@@ -35,6 +35,7 @@ import org.apache.carbondata.core.indexstore.blockletindex.BlockletDataMapModel;
 import org.apache.carbondata.core.indexstore.blockletindex.SegmentIndexFileStore;
 import org.apache.carbondata.core.memory.MemoryException;
 import org.apache.carbondata.core.util.BlockletDataMapUtil;
+import org.apache.carbondata.core.util.path.CarbonTablePath;
 
 /**
  * Class to handle loading, unloading,clearing,storing of the table
@@ -83,7 +84,8 @@ public class BlockletDataMapIndexStore
         Map<String, BlockMetaInfo> carbonDataFileBlockMetaInfoMapping = BlockletDataMapUtil
             .createCarbonDataFileBlockMetaInfoMapping(segmentFilePath);
         // if the identifier is not a merge file we can directly load the datamaps
-        if (identifier.getMergeIndexFileName() == null) {
+        if (identifier.getMergeIndexFileName() == null && !identifier.getIndexFileName()
+            .endsWith(CarbonTablePath.MERGE_INDEX_FILE_EXT)) {
           Map<String, BlockMetaInfo> blockMetaInfoMap = BlockletDataMapUtil
               .getBlockMetaInfoMap(identifier, indexFileStore, filesRead,
                   carbonDataFileBlockMetaInfoMapping);
