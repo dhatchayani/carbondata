@@ -225,10 +225,11 @@ public class StoreCreator {
     id.setEncodingList(encodings);
     id.setColumnUniqueId(UUID.randomUUID().toString());
     id.setColumnReferenceId(id.getColumnUniqueId());
-    id.setDimensionColumn(true);
+    id.setDimensionColumn(false);
     id.setSchemaOrdinal(schemaOrdinal++);
     if (sortColumns.contains(id.getColumnName())) {
       id.setSortColumn(true);
+      id.setDimensionColumn(true);
     }
     columnSchemas.add(id);
 
@@ -238,7 +239,7 @@ public class StoreCreator {
     date.setEncodingList(encodings);
     date.setColumnUniqueId(UUID.randomUUID().toString());
     date.setDimensionColumn(true);
-    date.setColumnReferenceId(id.getColumnUniqueId());
+    date.setColumnReferenceId(date.getColumnUniqueId());
     date.setSchemaOrdinal(schemaOrdinal++);
     if (sortColumns.contains(date.getColumnName())) {
       date.setSortColumn(true);
@@ -256,7 +257,7 @@ public class StoreCreator {
     if (sortColumns.contains(country.getColumnName())) {
       country.setSortColumn(true);
     }
-    country.setColumnReferenceId(id.getColumnUniqueId());
+    country.setColumnReferenceId(country.getColumnUniqueId());
     columnSchemas.add(country);
 
     ColumnSchema name = new ColumnSchema();
@@ -269,7 +270,7 @@ public class StoreCreator {
     if (sortColumns.contains(name.getColumnName())) {
       name.setSortColumn(true);
     }
-    name.setColumnReferenceId(id.getColumnUniqueId());
+    name.setColumnReferenceId(name.getColumnUniqueId());
     columnSchemas.add(name);
 
     ColumnSchema phonetype = new ColumnSchema();
@@ -282,7 +283,7 @@ public class StoreCreator {
     if (sortColumns.contains(phonetype.getColumnName())) {
       phonetype.setSortColumn(true);
     }
-    phonetype.setColumnReferenceId(id.getColumnUniqueId());
+    phonetype.setColumnReferenceId(phonetype.getColumnUniqueId());
     columnSchemas.add(phonetype);
 
     ColumnSchema serialname = new ColumnSchema();
@@ -295,7 +296,7 @@ public class StoreCreator {
     if (sortColumns.contains(serialname.getColumnName())) {
       serialname.setSortColumn(true);
     }
-    serialname.setColumnReferenceId(id.getColumnUniqueId());
+    serialname.setColumnReferenceId(serialname.getColumnUniqueId());
     columnSchemas.add(serialname);
     ColumnSchema salary = new ColumnSchema();
     salary.setColumnName("salary");
@@ -303,7 +304,7 @@ public class StoreCreator {
     salary.setEncodingList(new ArrayList<Encoding>());
     salary.setColumnUniqueId(UUID.randomUUID().toString());
     salary.setDimensionColumn(false);
-    salary.setColumnReferenceId(id.getColumnUniqueId());
+    salary.setColumnReferenceId(salary.getColumnUniqueId());
     salary.setSchemaOrdinal(schemaOrdinal++);
     columnSchemas.add(salary);
 
