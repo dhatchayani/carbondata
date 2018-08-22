@@ -221,7 +221,7 @@ public class CompressedDimensionChunkFileBasedReaderV3 extends AbstractChunkRead
 
   private boolean isEncodedWithMeta(DataChunk2 pageMetadata) {
     List<Encoding> encodings = pageMetadata.getEncoders();
-    if (encodings != null && encodings.size() == 1) {
+    if (encodings != null && !encodings.isEmpty()) {
       Encoding encoding = encodings.get(0);
       switch (encoding) {
         case DIRECT_COMPRESS:
@@ -239,12 +239,27 @@ public class CompressedDimensionChunkFileBasedReaderV3 extends AbstractChunkRead
   protected DimensionColumnPage decodeDimension(DimensionRawColumnChunk rawColumnPage,
       ByteBuffer pageData, DataChunk2 pageMetadata, int offset)
       throws IOException, MemoryException {
+    List<Encoding> encodings = pageMetadata.getEncoders();
     if (isEncodedWithMeta(pageMetadata)) {
       ColumnPage decodedPage = decodeDimensionByMeta(pageMetadata, pageData, offset,
           null != rawColumnPage.getLocalDictionary());
       decodedPage.setNullBits(QueryUtil.getNullBitSet(pageMetadata.presence));
-      return new ColumnPageWrapper(decodedPage, rawColumnPage.getLocalDictionary(),
-          isEncodedWithAdaptiveMeta(pageMetadata));
+      int[] invertedIndexes = new int[0];
+      int[] invertedIndexesReverse = new int[0];
+      // in case of no dictionary measure data types, if it is included in sort columns
+      // then inverted index to be uncompressed
+      if (encodings.contains(Encoding.INVERTED_INDEX)) {
+        offset += pageMetadata.data_page_length;
+        if (hasEncoding(pageMetadata.encoders, Encoding.INVERTED_INDEX)) {
+          invertedIndexes = CarbonUtil
+              .getUnCompressColumnIndex(pageMetadata.rowid_page_length, pageData, offset);
+          // get the reverse index
+          invertedIndexesReverse = getInvertedReverseIndex(invertedIndexes);
+        }
+      }
+      return new ColumnPageWrapper(decodedPage, rawColumnPage.getLocalDictionary(), invertedIndexes,
+          invertedIndexesReverse, isEncodedWithAdaptiveMeta(pageMetadata),
+          hasEncoding(pageMetadata.encoders, Encoding.INVERTED_INDEX));
     } else {
       // following code is for backward compatibility
       return decodeDimensionLegacy(rawColumnPage, pageData, pageMetadata, offset);
@@ -253,7 +268,7 @@ public class CompressedDimensionChunkFileBasedReaderV3 extends AbstractChunkRead
 
   private boolean isEncodedWithAdaptiveMeta(DataChunk2 pageMetadata) {
     List<Encoding> encodings = pageMetadata.getEncoders();
-    if (encodings != null && encodings.size() == 1) {
+    if (encodings != null && !encodings.isEmpty()) {
       Encoding encoding = encodings.get(0);
       switch (encoding) {
         case ADAPTIVE_INTEGRAL:

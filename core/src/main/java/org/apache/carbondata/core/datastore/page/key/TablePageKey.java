@@ -20,9 +20,12 @@ package org.apache.carbondata.core.datastore.page.key;
 import java.nio.ByteBuffer;
 
 import org.apache.carbondata.core.constants.CarbonCommonConstants;
+import org.apache.carbondata.core.datastore.ColumnType;
+import org.apache.carbondata.core.datastore.TableSpec;
 import org.apache.carbondata.core.datastore.block.SegmentProperties;
 import org.apache.carbondata.core.datastore.row.CarbonRow;
 import org.apache.carbondata.core.datastore.row.WriteStepRowUtil;
+import org.apache.carbondata.core.util.DataTypeUtil;
 import org.apache.carbondata.core.util.NonDictionaryUtil;
 
 public class TablePageKey {
@@ -50,18 +53,41 @@ public class TablePageKey {
 
   private SegmentProperties segmentProperties;
   private boolean hasNoDictionary;
+  private boolean hasNoDictionaryMeasure;
+  private TableSpec tableSpec;
 
-  public TablePageKey(int pageSize, SegmentProperties segmentProperties,
-                      boolean hasNoDictionary) {
+  public TablePageKey(int pageSize, SegmentProperties segmentProperties, boolean hasNoDictionary,
+      boolean hasNoDictionaryMeasure, TableSpec tableSpec) {
     this.pageSize = pageSize;
     this.segmentProperties = segmentProperties;
     this.hasNoDictionary = hasNoDictionary;
+    this.hasNoDictionaryMeasure = hasNoDictionaryMeasure;
+    this.tableSpec = tableSpec;
   }
 
   /** update all keys based on the input row */
   public void update(int rowId, CarbonRow row, byte[] mdk) {
-    if (hasNoDictionary) {
-      currentNoDictionaryKey = WriteStepRowUtil.getNoDictAndComplexDimension(row);
+    if (hasNoDictionary && hasNoDictionaryMeasure) {
+      Object[] noDictAndComplexDimension = WriteStepRowUtil.getNoDictAndComplexDimension(row);
+      byte[][] noDictionaryKey = new byte[noDictAndComplexDimension.length][];
+      TableSpec.DimensionSpec[] noDictAndCompSpecs = tableSpec.getNoDictAndComplexDimensions();
+      for (int i = 0; i < noDictAndComplexDimension.length; i++) {
+        if (DataTypeUtil.isPrimitiveColumn(noDictAndCompSpecs[i].getSchemaDataType()) && (
+            noDictAndCompSpecs[i].getColumnType() != ColumnType.COMPLEX_PRIMITIVE
+                && noDictAndCompSpecs[i].getColumnType() != ColumnType.COMPLEX)) {
+          noDictionaryKey[i] = new byte[0];
+        } else {
+          noDictionaryKey[i] = (byte[]) noDictAndComplexDimension[i];
+        }
+      }
+      currentNoDictionaryKey = noDictionaryKey;
+    } else if (hasNoDictionary) {
+      Object[] noDictAndComplexDimension = WriteStepRowUtil.getNoDictAndComplexDimension(row);
+      byte[][] noDictAndComplexDimensionBytes = new byte[noDictAndComplexDimension.length][];
+      for (int i = 0; i < noDictAndComplexDimension.length; i++) {
+        noDictAndComplexDimensionBytes[i] = (byte[]) noDictAndComplexDimension[i];
+      }
+      currentNoDictionaryKey = noDictAndComplexDimensionBytes;
     }
     if (rowId == 0) {
       startKey = mdk;

@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.carbondata.core.datastore.columnar.BlockIndexerStorage;
 import org.apache.carbondata.core.datastore.columnar.BlockIndexerStorageForNoInvertedIndexForShort;
 import org.apache.carbondata.core.datastore.columnar.BlockIndexerStorageForShort;
-import org.apache.carbondata.core.datastore.columnar.IndexStorage;
 import org.apache.carbondata.core.datastore.compression.Compressor;
 import org.apache.carbondata.core.datastore.page.ColumnPage;
 import org.apache.carbondata.core.datastore.page.encoding.ColumnPageEncoder;
@@ -53,7 +53,7 @@ public class HighCardDictDimensionIndexCodec extends IndexStorageCodec {
 
       @Override
       protected void encodeIndexStorage(ColumnPage input) {
-        IndexStorage indexStorage;
+        BlockIndexerStorage indexStorage;
         byte[][] data = input.getByteArrayPage();
         boolean isDictionary = input.isLocalDictGeneratedPage();
         if (isInvertedIndex) {

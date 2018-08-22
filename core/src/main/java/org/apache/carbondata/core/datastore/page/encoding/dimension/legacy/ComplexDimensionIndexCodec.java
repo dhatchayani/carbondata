@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.carbondata.core.datastore.columnar.BlockIndexerStorage;
 import org.apache.carbondata.core.datastore.columnar.BlockIndexerStorageForShort;
-import org.apache.carbondata.core.datastore.columnar.IndexStorage;
 import org.apache.carbondata.core.datastore.compression.Compressor;
 import org.apache.carbondata.core.datastore.page.ColumnPage;
 import org.apache.carbondata.core.datastore.page.encoding.ColumnPageEncoder;
@@ -46,7 +46,7 @@ public class ComplexDimensionIndexCodec extends IndexStorageCodec {
     return new IndexStorageEncoder() {
       @Override
       void encodeIndexStorage(ColumnPage inputPage) {
-        IndexStorage indexStorage =
+        BlockIndexerStorage indexStorage =
             new BlockIndexerStorageForShort(inputPage.getByteArrayPage(), false, false, false);
         byte[] flattened = ByteUtil.flatten(indexStorage.getDataPage());
         byte[] compressed = compressor.compressByte(flattened);

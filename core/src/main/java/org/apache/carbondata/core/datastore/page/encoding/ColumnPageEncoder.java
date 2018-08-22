@@ -34,6 +34,7 @@ import org.apache.carbondata.core.datastore.page.ColumnPage;
 import org.apache.carbondata.core.datastore.page.ComplexColumnPage;
 import org.apache.carbondata.core.datastore.page.encoding.compress.DirectCompressCodec;
 import org.apache.carbondata.core.memory.MemoryException;
+import org.apache.carbondata.core.metadata.datatype.DataType;
 import org.apache.carbondata.core.metadata.datatype.DataTypes;
 import org.apache.carbondata.core.util.CarbonMetadataUtil;
 import org.apache.carbondata.core.util.CarbonUtil;
@@ -60,6 +61,21 @@ public abstract class ColumnPageEncoder {
   protected abstract List<Encoding> getEncodingList();
 
   protected abstract ColumnPageEncoderMeta getEncoderMeta(ColumnPage inputPage);
+
+  /**
+   * Get the target data type of the page if encoded
+   *
+   * @param inputPage
+   * @return
+   */
+  public DataType getTargetDataType(ColumnPage inputPage) {
+    ColumnPageEncoderMeta encoderMeta = getEncoderMeta(inputPage);
+    if (null != encoderMeta) {
+      return encoderMeta.getStoreDataType();
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Return a encoded column page by encoding the input page
@@ -184,11 +200,11 @@ public abstract class ColumnPageEncoder {
       } else if ((inputPage.getDataType() == DataTypes.BYTE) || (inputPage.getDataType()
           == DataTypes.SHORT) || (inputPage.getDataType() == DataTypes.INT) || (
           inputPage.getDataType() == DataTypes.LONG)) {
-        return selectCodecByAlgorithmForIntegral(inputPage.getStatistics(), true)
+        return selectCodecByAlgorithmForIntegral(inputPage.getStatistics(), true, columnSpec)
             .createEncoder(null);
       } else if ((inputPage.getDataType() == DataTypes.FLOAT) || (inputPage.getDataType()
           == DataTypes.DOUBLE)) {
-        return selectCodecByAlgorithmForFloating(inputPage.getStatistics(), true)
+        return selectCodecByAlgorithmForFloating(inputPage.getStatistics(), true, columnSpec)
             .createEncoder(null);
       }
     }

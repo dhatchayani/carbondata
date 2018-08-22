@@ -82,8 +82,8 @@ public final class DataTypeUtil {
    * @return
    */
   public static Object getMeasureValueBasedOnDataType(String msrValue, DataType dataType,
-      CarbonMeasure carbonMeasure) {
-    return getMeasureValueBasedOnDataType(msrValue, dataType,carbonMeasure, false);
+      int scale, int precision) {
+    return getMeasureValueBasedOnDataType(msrValue, dataType, scale, precision, false);
   }
 
   /**
@@ -95,13 +95,13 @@ public final class DataTypeUtil {
    * @return
    */
   public static Object getMeasureValueBasedOnDataType(String msrValue, DataType dataType,
-      CarbonMeasure carbonMeasure, boolean useConverter) {
+      int scale, int precision, boolean useConverter) {
     if (dataType == DataTypes.BOOLEAN) {
       return BooleanConvert.parseBoolean(msrValue);
     } else if (DataTypes.isDecimal(dataType)) {
       BigDecimal bigDecimal =
-          new BigDecimal(msrValue).setScale(carbonMeasure.getScale(), RoundingMode.HALF_UP);
-      BigDecimal decimal = normalizeDecimalValue(bigDecimal, carbonMeasure.getPrecision());
+          new BigDecimal(msrValue).setScale(scale, RoundingMode.HALF_UP);
+      BigDecimal decimal = normalizeDecimalValue(bigDecimal, precision);
       if (useConverter) {
         return converter.convertFromBigDecimalToDecimal(decimal);
       } else {
@@ -974,6 +974,22 @@ public final class DataTypeUtil {
       value = ByteUtil.toXorLong(data, currentDataOffset, length);
     }
     return value;
+  }
+
+  /**
+   * Check if the column is a no dictionary primitive column
+   *
+   * @param dataType
+   * @return
+   */
+  public static boolean isPrimitiveColumn(DataType dataType) {
+    if (dataType == DataTypes.BOOLEAN || dataType == DataTypes.BYTE || dataType == DataTypes.SHORT
+        || dataType == DataTypes.INT || dataType == DataTypes.LONG || DataTypes.isDecimal(dataType)
+        || dataType == DataTypes.FLOAT || dataType == DataTypes.DOUBLE
+        || dataType == DataTypes.BYTE_ARRAY) {
+      return true;
+    }
+    return false;
   }
 
 }
