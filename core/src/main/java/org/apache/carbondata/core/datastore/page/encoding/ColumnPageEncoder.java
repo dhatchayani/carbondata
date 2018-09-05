@@ -38,6 +38,7 @@ import org.apache.carbondata.core.metadata.datatype.DataType;
 import org.apache.carbondata.core.metadata.datatype.DataTypes;
 import org.apache.carbondata.core.util.CarbonMetadataUtil;
 import org.apache.carbondata.core.util.CarbonUtil;
+import org.apache.carbondata.core.util.DataTypeUtil;
 import org.apache.carbondata.format.BlockletMinMaxIndex;
 import org.apache.carbondata.format.DataChunk2;
 import org.apache.carbondata.format.Encoding;
@@ -132,17 +133,28 @@ public abstract class ColumnPageEncoder {
   }
 
   private void fillMinMaxIndex(ColumnPage inputPage, DataChunk2 dataChunk) {
-    dataChunk.setMin_max(buildMinMaxIndex(inputPage));
+    dataChunk.setMin_max(buildMinMaxIndex(inputPage, dataChunk.encoders));
   }
 
-  private BlockletMinMaxIndex buildMinMaxIndex(ColumnPage inputPage) {
+  private BlockletMinMaxIndex buildMinMaxIndex(ColumnPage inputPage, List<Encoding> encoders) {
     BlockletMinMaxIndex index = new BlockletMinMaxIndex();
-    byte[] bytes = CarbonUtil.getValueAsBytes(
-        inputPage.getDataType(), inputPage.getStatistics().getMax());
-    ByteBuffer max = ByteBuffer.wrap(
-        bytes);
-    ByteBuffer min = ByteBuffer.wrap(
-        CarbonUtil.getValueAsBytes(inputPage.getDataType(), inputPage.getStatistics().getMin()));
+    ByteBuffer max;
+    ByteBuffer min;
+    if (CarbonUtil.isEncodedWithMeta(encoders)
+        && inputPage.getColumnSpec().getColumnType() == ColumnType.PLAIN_VALUE) {
+      max = ByteBuffer.wrap(DataTypeUtil
+          .getMinMaxBytesBasedOnDataTypeForNoDictionaryColumn(inputPage.getStatistics().getMax(),
+              inputPage.getDataType()));
+      min = ByteBuffer.wrap(DataTypeUtil
+          .getMinMaxBytesBasedOnDataTypeForNoDictionaryColumn(inputPage.getStatistics().getMin(),
+              inputPage.getDataType()));
+    } else {
+      byte[] bytes =
+          CarbonUtil.getValueAsBytes(inputPage.getDataType(), inputPage.getStatistics().getMax());
+      max = ByteBuffer.wrap(bytes);
+      min = ByteBuffer.wrap(
+          CarbonUtil.getValueAsBytes(inputPage.getDataType(), inputPage.getStatistics().getMin()));
+    }
     index.addToMax_values(max);
     index.addToMin_values(min);
     return index;

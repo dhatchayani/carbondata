@@ -240,7 +240,7 @@ public class CompressedDimensionChunkFileBasedReaderV3 extends AbstractChunkRead
       ByteBuffer pageData, DataChunk2 pageMetadata, int offset)
       throws IOException, MemoryException {
     List<Encoding> encodings = pageMetadata.getEncoders();
-    if (isEncodedWithMeta(pageMetadata)) {
+    if (CarbonUtil.isEncodedWithMeta(encodings)) {
       ColumnPage decodedPage = decodeDimensionByMeta(pageMetadata, pageData, offset,
           null != rawColumnPage.getLocalDictionary());
       decodedPage.setNullBits(QueryUtil.getNullBitSet(pageMetadata.presence));
@@ -266,7 +266,7 @@ public class CompressedDimensionChunkFileBasedReaderV3 extends AbstractChunkRead
     }
   }
 
-  private boolean isEncodedWithAdaptiveMeta(DataChunk2 pageMetadata) {
+  public boolean isEncodedWithAdaptiveMeta(DataChunk2 pageMetadata) {
     List<Encoding> encodings = pageMetadata.getEncoders();
     if (encodings != null && !encodings.isEmpty()) {
       Encoding encoding = encodings.get(0);

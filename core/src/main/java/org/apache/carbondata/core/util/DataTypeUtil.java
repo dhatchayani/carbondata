@@ -415,6 +415,38 @@ public final class DataTypeUtil {
   }
 
   /**
+   * Convert the min/max values to bytes for no dictionary column
+   *
+   * @param dimensionValue
+   * @param actualDataType
+   * @return
+   */
+  public static byte[] getMinMaxBytesBasedOnDataTypeForNoDictionaryColumn(Object dimensionValue,
+      DataType actualDataType) {
+    if (dimensionValue == null) {
+      if (actualDataType == DataTypes.STRING) {
+        return CarbonCommonConstants.MEMBER_DEFAULT_VAL_ARRAY;
+      } else {
+        return new byte[0];
+      }
+    }
+    if (actualDataType == DataTypes.BOOLEAN) {
+      return ByteUtil.toBytes(Boolean.valueOf(ByteUtil.toBoolean((byte) dimensionValue)));
+    } else if (actualDataType == DataTypes.SHORT) {
+      return ByteUtil.toXorBytes((Short) dimensionValue);
+    } else if (actualDataType == DataTypes.INT) {
+      return ByteUtil.toXorBytes((Integer) dimensionValue);
+    } else if (actualDataType == DataTypes.LONG) {
+      return ByteUtil.toXorBytes((Long) dimensionValue);
+    } else if (actualDataType == DataTypes.TIMESTAMP) {
+      return ByteUtil.toXorBytes((Long)dimensionValue);
+    } else {
+      // Default action for String/Varchar
+      return ByteUtil.toBytes(dimensionValue.toString());
+    }
+  }
+
+  /**
    * Returns true for fixed length DataTypes.
    * @param dataType
    * @return

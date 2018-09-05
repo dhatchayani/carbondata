@@ -425,7 +425,7 @@ public class IncludeFilterExecuterImpl implements FilterExecuter {
     }
     // binary search can only be applied if column is sorted and
     // inverted index exists for that column
-    if (isNaturalSorted) {
+    if (isNaturalSorted && dimensionColumnPage.isExplicitSorted()) {
       int startIndex = 0;
       for (int i = 0; i < filterValues.length; i++) {
         if (startIndex >= numerOfRows) {
@@ -519,10 +519,8 @@ public class IncludeFilterExecuterImpl implements FilterExecuter {
   private boolean isScanRequired(byte[] blkMaxVal, byte[] blkMinVal, byte[][] filterValues,
       DataType dataType) {
     boolean isScanRequired = false;
-    Object minValue =
-        DataTypeUtil.getMeasureObjectFromDataType(blkMinVal, dataType);
-    Object maxValue =
-        DataTypeUtil.getMeasureObjectFromDataType(blkMaxVal, dataType);
+    Object minValue = DataTypeUtil.getDataBasedOnDataTypeForNoDictionaryColumn(blkMinVal, dataType);
+    Object maxValue = DataTypeUtil.getDataBasedOnDataTypeForNoDictionaryColumn(blkMaxVal, dataType);
     for (int k = 0; k < filterValues.length; k++) {
       if (ByteUtil.UnsafeComparer.INSTANCE
           .compareTo(filterValues[k], CarbonCommonConstants.EMPTY_BYTE_ARRAY) == 0) {

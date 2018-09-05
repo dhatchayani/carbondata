@@ -2195,7 +2195,8 @@ public final class FilterUtil {
     DataType dataType = carbonDimension.getDataType();
     if (DataTypeUtil.isPrimitiveColumn(dataType) && !carbonDimension
         .hasEncoding(Encoding.DICTIONARY)) {
-      Object value = DataTypeUtil.getMeasureObjectFromDataType(minMaxBytes, dataType);
+      Object value =
+          DataTypeUtil.getDataBasedOnDataTypeForNoDictionaryColumn(minMaxBytes, dataType);
       // filter value should be in range of max and min value i.e
       // max>filtervalue>min
       // so filter-max should be negative

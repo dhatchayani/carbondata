@@ -89,9 +89,23 @@ public class ColumnPageWrapper implements DimensionColumnPage {
    * @param vectorRow
    */
   private void fillRow(int rowId, CarbonColumnVector vector, int vectorRow) {
-    byte[] value = getChunkData(rowId);
-    int length = value.length;
-    DimensionDataVectorProcessor.putDataToVector(vector, value, vectorRow, length);
+    if (columnPage.getNullBits().get(rowId)
+        && columnPage.getColumnSpec().getColumnType() == ColumnType.COMPLEX_PRIMITIVE) {
+      // if this row is null, return default null represent in byte array
+      byte[] value = CarbonCommonConstants.MEMBER_DEFAULT_VAL_ARRAY;
+      DimensionDataVectorProcessor.putDataToVector(vector, value, vectorRow, value.length);
+    } else if (columnPage.getNullBits().get(rowId)) {
+      // if this row is null, return default null represent in byte array
+      byte[] value = CarbonCommonConstants.EMPTY_BYTE_ARRAY;
+      DimensionDataVectorProcessor.putDataToVector(vector, value, vectorRow, value.length);
+    } else {
+      if (isExplicitSorted) {
+        rowId = invertedReverseIndex[rowId];
+      }
+      byte[] value = getChunkData(rowId);
+      int length = value.length;
+      DimensionDataVectorProcessor.putDataToVector(vector, value, vectorRow, length);
+    }
   }
 
   @Override
@@ -108,13 +122,6 @@ public class ColumnPageWrapper implements DimensionColumnPage {
   }
 
   @Override public byte[] getChunkData(int rowId) {
-    // in case of explicit sorted (inverted index), the row id should be based on the
-    // inverted reverse index. But the null bitsets will be based on the actual row id.
-    // so keep a copy of the actual row id to get the null bitsets
-    int actualRowId = rowId;
-    if (isExplicitSorted) {
-      rowId = invertedReverseIndex[rowId];
-    }
     ColumnType columnType = columnPage.getColumnSpec().getColumnType();
     DataType srcDataType = columnPage.getColumnSpec().getSchemaDataType();
     DataType targetDataType = columnPage.getDataType();
@@ -123,11 +130,12 @@ public class ColumnPageWrapper implements DimensionColumnPage {
           .getDictionaryValue(CarbonUtil.getSurrogateInternal(columnPage.getBytes(rowId), 0, 3));
     } else if ((columnType == ColumnType.COMPLEX_PRIMITIVE && this.isAdaptivePrimitive()) || (
         columnType == ColumnType.PLAIN_VALUE && DataTypeUtil.isPrimitiveColumn(srcDataType))) {
-      if (columnPage.getNullBits().get(actualRowId) && columnType == ColumnType.COMPLEX_PRIMITIVE) {
+      if (!isExplicitSorted() && columnPage.getNullBits().get(rowId)
+          && columnType == ColumnType.COMPLEX_PRIMITIVE) {
         // if this row is null, return default null represent in byte array
         return CarbonCommonConstants.MEMBER_DEFAULT_VAL_ARRAY;
       }
-      if (columnPage.getNullBits().get(actualRowId)) {
+      if (!isExplicitSorted() && columnPage.getNullBits().get(rowId)) {
         // if this row is null, return default null represent in byte array
         return CarbonCommonConstants.EMPTY_BYTE_ARRAY;
       }
@@ -172,7 +180,7 @@ public class ColumnPageWrapper implements DimensionColumnPage {
         throw new RuntimeException("unsupported type: " + targetDataType);
       }
     } else if ((columnType == ColumnType.COMPLEX_PRIMITIVE && !this.isAdaptivePrimitive())) {
-      if (columnPage.getNullBits().get(actualRowId)) {
+      if (!isExplicitSorted() && columnPage.getNullBits().get(rowId)) {
         return CarbonCommonConstants.EMPTY_BYTE_ARRAY;
       }
       if ((srcDataType == DataTypes.BYTE) || (srcDataType == DataTypes.BOOLEAN)) {

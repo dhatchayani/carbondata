@@ -162,7 +162,8 @@ public class RowLevelRangeGrtrThanEquaToFilterExecuterImpl extends RowLevelFilte
 
   private boolean isScanRequired(byte[] blockMaxValue, byte[][] filterValues, DataType dataType) {
     boolean isScanRequired = false;
-    Object maxValue = DataTypeUtil.getMeasureObjectFromDataType(blockMaxValue, dataType);
+    Object maxValue =
+        DataTypeUtil.getDataBasedOnDataTypeForNoDictionaryColumn(blockMaxValue, dataType);
     for (int k = 0; k < filterValues.length; k++) {
       if (ByteUtil.UnsafeComparer.INSTANCE
           .compareTo(filterValues[k], CarbonCommonConstants.EMPTY_BYTE_ARRAY) == 0) {
@@ -448,7 +449,7 @@ public class RowLevelRangeGrtrThanEquaToFilterExecuterImpl extends RowLevelFilte
     BitSet bitSet = new BitSet(numerOfRows);
     byte[][] filterValues = this.filterRangeValues;
     // binary search can only be applied if column is sorted
-    if (isNaturalSorted) {
+    if (isNaturalSorted && dimensionColumnPage.isExplicitSorted()) {
       int start = 0;
       int last = 0;
       int startIndex = 0;
