@@ -17,35 +17,28 @@
 
 package org.apache.carbondata.core.datastore.columnar;
 
-class ColumnarKeyStoreMetadata {
+public class BinaryColumnDataVo implements ColumnDataVo<byte[]> {
 
-  private int[] columnReverseIndex;
+  protected byte[] column;
 
-  private int eachRowSize;
+  private Short index;
 
-  ColumnarKeyStoreMetadata(int eachRowSize) {
-    this.eachRowSize = eachRowSize;
+  BinaryColumnDataVo(byte[] column, short index) {
+    this.column = column;
+    this.index = index;
   }
 
   /**
-   * @return the eachRowSize
+   * @return the column
    */
-  int getEachRowSize() {
-    return eachRowSize;
+  public byte[] getData() {
+    return column;
   }
 
   /**
-   * @return the columnReverseIndex
+   * @return the index
    */
-  int[] getColumnReverseIndex() {
-    return columnReverseIndex;
+  public short getIndex() {
+    return index;
   }
-
-  /**
-   * @param columnReverseIndex the columnReverseIndex to set
-   */
-  void setColumnReverseIndex(int[] columnReverseIndex) {
-    this.columnReverseIndex = columnReverseIndex;
-  }
-
 }
