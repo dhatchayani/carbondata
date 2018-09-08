@@ -116,6 +116,7 @@ public class StoreCreator {
     this.csvPath = csvPath;
     String dbName = "testdb";
     String tableName = "testtable";
+    sortColumns.add("id");
     sortColumns.add("date");
     sortColumns.add("country");
     sortColumns.add("name");
