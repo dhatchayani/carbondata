@@ -212,11 +212,11 @@ public abstract class ColumnPageEncoder {
       } else if ((inputPage.getDataType() == DataTypes.BYTE) || (inputPage.getDataType()
           == DataTypes.SHORT) || (inputPage.getDataType() == DataTypes.INT) || (
           inputPage.getDataType() == DataTypes.LONG)) {
-        return selectCodecByAlgorithmForIntegral(inputPage.getStatistics(), true, columnSpec)
+        return selectCodecByAlgorithmForIntegral(inputPage.getStatistics(), true)
             .createEncoder(null);
       } else if ((inputPage.getDataType() == DataTypes.FLOAT) || (inputPage.getDataType()
           == DataTypes.DOUBLE)) {
-        return selectCodecByAlgorithmForFloating(inputPage.getStatistics(), true, columnSpec)
+        return selectCodecByAlgorithmForFloating(inputPage.getStatistics(), true)
             .createEncoder(null);
       }
     }

@@ -35,6 +35,7 @@ import org.apache.carbondata.core.localdictionary.generator.LocalDictionaryGener
 import org.apache.carbondata.core.memory.MemoryException;
 import org.apache.carbondata.core.metadata.datatype.DataType;
 import org.apache.carbondata.core.metadata.datatype.DataTypes;
+import org.apache.carbondata.core.util.ByteUtil;
 import org.apache.carbondata.core.util.CarbonProperties;
 
 import static org.apache.carbondata.core.metadata.datatype.DataTypes.BYTE;
@@ -374,8 +375,8 @@ public abstract class ColumnPage {
    */
   public void putData(int rowId, Object value) {
     if (value == null) {
-      putNull(rowId);
-      statsCollector.updateNull(rowId);
+      putNull(rowId);statsCollector.updateNull(rowId);
+
       nullBitSet.set(rowId);
       return;
     }
@@ -888,5 +889,43 @@ public abstract class ColumnPage {
       }
     }
     return data;
+  }
+
+  /**
+   * Put the data to the page based on the data type for each row
+   *
+   * @param dataPage
+   * @return
+   */
+  public void putDataToPage(Object[] dataPage) {
+    if (dataType == DataTypes.BYTE) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putByte(i, (byte) dataPage[i]);
+      }
+    } else if (dataType == DataTypes.BOOLEAN) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putBoolean(i, ByteUtil.toBoolean((byte) dataPage[i]));
+      }
+    } else if (dataType == DataTypes.SHORT) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putShort(i, (short) dataPage[i]);
+      }
+    } else if (dataType == DataTypes.SHORT_INT) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putShortInt(i, (int) dataPage[i]);
+      }
+    } else if (dataType == DataTypes.INT) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putInt(i, (int) dataPage[i]);
+      }
+    } else if (dataType == DataTypes.LONG) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putLong(i, (long) dataPage[i]);
+      }
+    } else if (dataType == DataTypes.DOUBLE) {
+      for (int i = 0; i < dataPage.length; i++) {
+        putDouble(i, (double) dataPage[i]);
+      }
+    }
   }
 }

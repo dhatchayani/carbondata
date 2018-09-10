@@ -410,7 +410,7 @@ public class TablePage {
           break;
         case COMPLEX:
           EncodedColumnPage[] encodedPages = ColumnPageEncoder.encodeComplexColumn(
-              complexDimensionPages[complexDimIndex++]);
+            complexDimensionPages[complexDimIndex++]);
           encodedComplexDimenions.addAll(Arrays.asList(encodedPages));
           break;
         default:

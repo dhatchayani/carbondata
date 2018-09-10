@@ -34,7 +34,6 @@ import org.apache.carbondata.core.datastore.page.statistics.SimpleStatsResult;
 import org.apache.carbondata.core.memory.MemoryException;
 import org.apache.carbondata.core.metadata.datatype.DataType;
 import org.apache.carbondata.core.metadata.datatype.DataTypes;
-import org.apache.carbondata.format.DataChunk2;
 import org.apache.carbondata.format.Encoding;
 
 /**
@@ -44,11 +43,12 @@ import org.apache.carbondata.format.Encoding;
  */
 public class AdaptiveFloatingCodec extends AdaptiveCodec {
 
+  private ColumnPage encodedPage;
   private Double factor;
 
   public AdaptiveFloatingCodec(DataType srcDataType, DataType targetDataType,
-      SimpleStatsResult stats, boolean isInvertedIndex) {
-    super(srcDataType, targetDataType, stats, isInvertedIndex);
+      SimpleStatsResult stats) {
+    super(srcDataType, targetDataType, stats);
     this.factor = Math.pow(10, stats.getDecimalCount());
   }
 
@@ -61,18 +61,16 @@ public class AdaptiveFloatingCodec extends AdaptiveCodec {
   public ColumnPageEncoder createEncoder(Map<String, String> parameter) {
     final Compressor compressor = CompressorFactory.getInstance().getCompressor();
     return new ColumnPageEncoder() {
-      byte[] result = null;
       @Override
       protected byte[] encodeData(ColumnPage input) throws MemoryException, IOException {
         if (encodedPage != null) {
           throw new IllegalStateException("already encoded");
         }
-        result = encodeAndCompressPage(input, converter, compressor);
-        byte[] bytes = writeInvertedIndexIfRequired(result);
+        encodedPage = ColumnPage.newPage(input.getColumnSpec(), targetDataType,
+            input.getPageSize());
+        input.convertValue(converter);
+        byte[] result = encodedPage.compress(compressor);
         encodedPage.freeMemory();
-        if (bytes.length != 0) {
-          return bytes;
-        }
         return result;
       }
 
@@ -80,9 +78,6 @@ public class AdaptiveFloatingCodec extends AdaptiveCodec {
       protected List<Encoding> getEncodingList() {
         List<Encoding> encodings = new ArrayList<Encoding>();
         encodings.add(Encoding.ADAPTIVE_FLOATING);
-        if (null != indexStorage && indexStorage.getRowIdPageLengthInBytes() > 0) {
-          encodings.add(Encoding.INVERTED_INDEX);
-        }
         return encodings;
       }
 
@@ -90,11 +85,6 @@ public class AdaptiveFloatingCodec extends AdaptiveCodec {
       protected ColumnPageEncoderMeta getEncoderMeta(ColumnPage inputPage) {
         return new ColumnPageEncoderMeta(inputPage.getColumnSpec(), targetDataType, stats,
             compressor.getName());
-      }
-
-      @Override
-      protected void fillLegacyFields(DataChunk2 dataChunk) throws IOException {
-        fillLegacyFieldsIfRequired(dataChunk, result);
       }
 
     };

@@ -17,21 +17,28 @@
 package org.apache.carbondata.core.datastore.columnar;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.apache.carbondata.core.metadata.datatype.DataType;
+import org.apache.carbondata.core.metadata.datatype.DataTypes;
+import org.apache.carbondata.core.util.ByteUtil;
 import org.apache.carbondata.core.util.comparator.SerializableComparator;
 
 public class PrimitivePageIndexGenerator extends PageIndexGenerator<Object[]> {
 
   private Object[] dataPage;
 
-  public PrimitivePageIndexGenerator(Object[] dataPage, boolean isSortRequired, DataType dataType,
-      boolean applyRle) {
+  public PrimitivePageIndexGenerator(Object[] dataPage, boolean isSortRequired,
+      final DataType dataType, boolean applyRle) {
     ColumnDataVo<Object>[] dataWithRowId = createColumnWithRowId(dataPage);
     if (isSortRequired) {
-      SerializableComparator comparator =
-          org.apache.carbondata.core.util.comparator.Comparator.getComparator(dataType);
-      Arrays.sort(dataWithRowId, comparator);
+      Arrays.sort(dataWithRowId, new Comparator<ColumnDataVo<Object>>() {
+        @Override public int compare(ColumnDataVo<Object> o1, ColumnDataVo<Object> o2) {
+          SerializableComparator comparator =
+              org.apache.carbondata.core.util.comparator.Comparator.getComparator(dataType);
+          return comparator.compare(o1.getData(), o2.getData());
+        }
+      });
       short[] rowIds = extractDataAndReturnRowId(dataWithRowId, dataPage);
       rleEncodeOnRowId(rowIds);
 

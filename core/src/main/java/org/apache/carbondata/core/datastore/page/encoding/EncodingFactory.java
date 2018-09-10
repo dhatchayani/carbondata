@@ -81,27 +81,25 @@ public abstract class EncodingFactory {
       metadata.readFields(in);
       SimpleStatsResult stats = PrimitivePageStatsCollector.newInstance(metadata);
       return new AdaptiveIntegralCodec(metadata.getSchemaDataType(), metadata.getStoreDataType(),
-          stats, encodings.contains(Encoding.INVERTED_INDEX)).createDecoder(metadata);
+          stats).createDecoder(metadata);
     } else if (encoding == ADAPTIVE_DELTA_INTEGRAL) {
       ColumnPageEncoderMeta metadata = new ColumnPageEncoderMeta();
       metadata.readFields(in);
       SimpleStatsResult stats = PrimitivePageStatsCollector.newInstance(metadata);
       return new AdaptiveDeltaIntegralCodec(metadata.getSchemaDataType(),
-          metadata.getStoreDataType(), stats, encodings.contains(Encoding.INVERTED_INDEX))
-          .createDecoder(metadata);
+          metadata.getStoreDataType(), stats).createDecoder(metadata);
     } else if (encoding == ADAPTIVE_FLOATING) {
       ColumnPageEncoderMeta metadata = new ColumnPageEncoderMeta();
       metadata.readFields(in);
       SimpleStatsResult stats = PrimitivePageStatsCollector.newInstance(metadata);
       return new AdaptiveFloatingCodec(metadata.getSchemaDataType(), metadata.getStoreDataType(),
-          stats, encodings.contains(Encoding.INVERTED_INDEX)).createDecoder(metadata);
+          stats).createDecoder(metadata);
     } else if (encoding == ADAPTIVE_DELTA_FLOATING) {
       ColumnPageEncoderMeta metadata = new ColumnPageEncoderMeta();
       metadata.readFields(in);
       SimpleStatsResult stats = PrimitivePageStatsCollector.newInstance(metadata);
       return new AdaptiveDeltaFloatingCodec(metadata.getSchemaDataType(),
-          metadata.getStoreDataType(), stats, encodings.contains(Encoding.INVERTED_INDEX))
-          .createDecoder(metadata);
+          metadata.getStoreDataType(), stats).createDecoder(metadata);
     } else if (encoding == RLE_INTEGRAL) {
       RLEEncoderMeta metadata = new RLEEncoderMeta();
       metadata.readFields(in);
@@ -135,7 +133,7 @@ public abstract class EncodingFactory {
         dataType == DataTypes.LONG) {
       // create the codec based on algorithm and create decoder by recovering the metadata
       ColumnPageCodec codec =
-          DefaultEncodingFactory.selectCodecByAlgorithmForIntegral(stats, false, spec);
+          DefaultEncodingFactory.selectCodecByAlgorithmForIntegral(stats, false);
       if (codec instanceof AdaptiveIntegralCodec) {
         AdaptiveIntegralCodec adaptiveCodec = (AdaptiveIntegralCodec) codec;
         ColumnPageEncoderMeta meta =
@@ -157,7 +155,7 @@ public abstract class EncodingFactory {
     } else if (dataType == DataTypes.FLOAT || dataType == DataTypes.DOUBLE) {
       // create the codec based on algorithm and create decoder by recovering the metadata
       ColumnPageCodec codec =
-          DefaultEncodingFactory.selectCodecByAlgorithmForFloating(stats, false, spec);
+          DefaultEncodingFactory.selectCodecByAlgorithmForFloating(stats, false);
       if (codec instanceof AdaptiveFloatingCodec) {
         AdaptiveFloatingCodec adaptiveCodec = (AdaptiveFloatingCodec) codec;
         ColumnPageEncoderMeta meta =
@@ -183,7 +181,7 @@ public abstract class EncodingFactory {
     } else if (dataType == DataTypes.LEGACY_LONG) {
       // In case of older versions like in V1 format it has special datatype to handle
       AdaptiveIntegralCodec adaptiveCodec =
-          new AdaptiveIntegralCodec(DataTypes.LONG, DataTypes.LONG, stats, false);
+          new AdaptiveIntegralCodec(DataTypes.LONG, DataTypes.LONG, stats);
       ColumnPageEncoderMeta meta =
           new ColumnPageEncoderMeta(spec, adaptiveCodec.getTargetDataType(), stats, compressor);
       return adaptiveCodec.createDecoder(meta);
