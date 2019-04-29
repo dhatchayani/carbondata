@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -233,6 +234,12 @@ public class CarbonDictionaryDecodeReadSupport<T> implements CarbonReadSupport<T
       return new LongWritable((long) obj);
     } else if (dataType == DataTypes.SHORT) {
       return new ShortWritable((short) obj);
+    } else if (dataType == DataTypes.BOOLEAN) {
+      return new BooleanWritable((boolean) obj);
+    } else if (dataType == DataTypes.VARCHAR) {
+      return new Text(obj.toString());
+    } else if (dataType == DataTypes.BINARY) {
+      return new Text(obj.toString());
     } else if (dataType == DataTypes.DATE) {
       Calendar c = Calendar.getInstance();
       c.setTime(new Date(0));
